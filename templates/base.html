@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Meta tags -->
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="language" content="English">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://api.orbitgadget.com/" rel="preconnect">
+    <meta name="robots" content="index, follow">
+    <meta name="keywords" content="coding, code, linux, computer, cse, orbit, science, technology, computer science">
+    <meta name="description" property="og:description" content="{% block metaDesc %}{% endblock metaDesc %}" />
+    <link rel="canonical" href="https://orbitgadget.com{% block metatags %}{% endblock metatags %}" />
+    <meta name="author" content="{% block authblock %}{% endblock authblock %}">
+    <meta property="og:url" content="https://orbitgadget.com{% block ogurl %}{% endblock ogurl %}" />
+    <meta property="og:title" content="{% block ogtitle %}{% endblock ogtitle %}" />
+    <meta property="og:image" content="{% block ogthumb %}{% endblock ogthumb %}" />
+    <meta property="og:image:alt" content="{% block ogthumbalt %}{% endblock ogthumbalt %}" />
+    <meta name="twitter:image" content="{% block twimage %}{% endblock twimage %}" />
+    <meta property="twitter:image:alt" content="{% block twimalt %}{% endblock twimalt %}" />
+    <meta property="og:type" content="article">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@ajaycc17" />
+    <meta name="twitter:creator" content="@ajaycc17">
+    <!-- favicon -->
+    <link rel="shortcut icon" type="image/png" href="{% static 'favicon/favicon.ico' %}" />
+    <!-- external css -->
+    {% tailwind_css %}
+    <link rel="preload stylesheet" href="{% static 'css/stylesheet.css' %}" as="style">
+    <link rel="preload stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css" as="style">
+    <link rel="preload stylesheet" href="{% static 'css/prism.css' %}" as="style">
+    <!--fonts-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- schema -->
+    {% block schemaBlock %}{% endblock schemaBlock %}
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CGXP7EE525"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-CGXP7EE525');
+    </script>
+    <!-- Google Tags -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7112659924280416"
+      crossorigin="anonymous"></script>
+    <!-- Clarity tracking code for https://orbitgadget.com/ -->
+    <script>    
+      (function(c,l,a,r,i,t,y){        
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};        
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i+"?ref=bwt";        
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);    
+      })(window, document, "clarity", "script", "c0aw9rhjyz");
+    </script>
+    <!-- title -->
+    <title>{% block title %}{% endblock title %} - OrbitGadget</title>
+  </head>
+  <body>
+    <!--navbar-->
+    <header class="fixed w-full z-50 text-white bg-darker body-font">
+      <div class="px-0 md:px-4 max-w-6xl mx-auto flex flex-wrap pt-2 md:py-3 pb-0 flex-col md:flex-row">
+        <div class="fullWidth md:mr-8 flex items-center justify-between pb-2 md:pb-0 md:px-0 px-2 md:border-none border-b-2 border-dashed border-gray-700">
+          <a href="/" class="flex items-center">
+            <img src="{% static 'images/logo.svg' %}" alt="OrbitGadget" width="130" height="auto">
+          </a>
+          {% if user.is_authenticated %}
+          <span class="md:hidden flex items-center cursor-pointer pl-2" onclick="showLogMenu()">
+            <img src="https://gravatar.com/avatar/{{ user.email|md5 }}?d=wavatar" class="rounded-full"
+              alt="{{user.username}}" width="30px" height="auto">
+            <span class="sm:block hidden font-heads font-semibold text-gray-300 text-sm pl-2">
+              {{user.username}}
+            </span>
+            <i class="bi bi-caret-down-fill pl-1"></i>
+          </span>
+          {% else %}
+          <span class="md:hidden block">
+            <a class="pl-2" href="/accounts/login/?next={{request.path}}">
+              <i class="bi bi-person-circle text-xl"></i>
+            </a>
+          </span>
+          {% endif %}
+        </div>
+        <nav class="fullWidth flex md:px-0 px-2 md:ml-auto md:mr-auto overflow-x-scroll justify-between items-center md:text-base text-sm font-semibold md:py-0 py-2">
+          <a href="/blog/">
+            <span class="mr-8 {% block blogactive %}{% endblock blogactive %}">Blog</span>
+          </a>
+          <a href="/blog/topics/">
+            <span class="mr-8 {% block topicsactive %}{% endblock topicsactive %}">Topics</span>
+          </a>
+          <a href="/about/">
+            <span class="mr-8 {% block aboutactive %}{% endblock aboutactive %}">About</span>
+          </a>
+          <a href="/contact/">
+            <span class="mr-8 {% block contactactive %}{% endblock contactactive %}">Contact</span>
+          </a>
+          <a href="/projects/">
+            <span class="{% block projectsactive %}{% endblock projectsactive %}">Projects</span>
+          </a>
+        </nav>
+        {% if user.is_authenticated %}
+        <span class="md:flex hidden items-center cursor-pointer pl-2" onclick="showLogMenu()">
+          <img src="https://gravatar.com/avatar/{{ user.email|md5 }}?d=wavatar" class="rounded-full"
+            alt="{{user.username}}" width="30px" height="auto">
+          <span class="font-heads font-semibold text-gray-300 text-sm pl-2">
+            {{user.username}}
+          </span>
+          <i class="bi bi-caret-down-fill pl-1"></i>
+        </span>
+        {%else%}
+        <a href="/accounts/login/?next={{request.path}}" class="md:block hidden py-1 px-3 font-semibold font-heads text-sm text-center text-white rounded-lg focus:outline-none bg-green-600 hover:bg-green-700">
+          Sign In
+        </a>
+        {%endif%}
+      </div>
+    </header>
+    <!--accounts-menu-->
+    <div id="log-menu" class="md:top-[54px] top-[84px] z-40 hidden text-gray-200 bg-darker fixed right-0 border-t-2 border-dashed border-gray-700 sm:border-t-0 sm:w-72 w-full py-2 sm:px-3 px-2">
+      <ul class="font-semibold text-sm">
+        <a href="/profile/{{user.username}}/">
+          <li class="flex items-center justify-between border-b border-gray-700 py-2">
+            <span><i class="bi bi-person-circle pr-2 text-lime-400"></i>Profile</span><i class="bi bi-chevron-right"></i>
+          </li>
+        </a>
+        <a href="/accounts/email/">
+          <li class="flex items-center justify-between border-b border-gray-700 py-2">
+            <span><i class="bi bi-at pr-2 text-lime-400"></i>Add Email</span><i class="bi bi-chevron-right"></i>
+          </li>
+        </a>
+        <a href="/accounts/password/change/">
+          <li class="flex items-center justify-between border-b border-gray-700 py-2">
+            <span><i class="bi bi-unlock-fill pr-2 text-lime-400"></i>Change Password</span><i class="bi bi-chevron-right"></i>
+          </li>
+        </a>
+        <a href="/accounts/password/reset/">
+          <li class="flex items-center justify-between border-b border-gray-700 py-2">
+            <span><i class="bi bi-key-fill pr-2 text-lime-400"></i>Reset Password</span><i class="bi bi-chevron-right"></i>
+          </li>
+        </a>
+        <a href="/accounts/logout/?next={{request.path}}">
+          <li class="flex items-center justify-between py-2">
+            <span><i class="bi bi-arrow-bar-right pr-2 text-lime-400"></i>Sign Out</span><i class="bi bi-chevron-right"></i>
+          </li>
+        </a>
+      </ul>
+    </div>
+    <!--except header everything-->
+    {% if user.is_authenticated %}
+    <div class="md:pt-[54px] pt-[84px]">
+    {% else %}
+    <div class="md:pt-[52px] pt-[80px]">
+    {% endif %}
+      <!-- messages -->
+      {% for message in messages %}
+      {% if message.tags == "danger" %}
+      <div id="alert-messages" class="flex p-3 bg-red-200" role="alert">
+        <div class="text-sm font-semibold text-red-800">
+          <i class="bi bi-info-circle-fill pr-2"></i><strong>Error:</strong> {{message}}
+        </div>
+        <button type="button" class="ml-auto -mx-1.5 -my-1.5 rounded-lg p-1.5 flex items-center justify-center h-8 w-8 bg-red-200 text-red-600 hover:bg-red-300" onclick="closeMessage()">
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+      </div>
+      {% else %}
+      <div id="alert-messages" class="flex p-3 bg-green-200" role="alert">
+        <div class="text-sm font-semibold text-green-800">
+          <i class="bi bi-info-circle-fill pr-2"></i><strong>{{message.tags|capfirst}}:</strong> {{message}}
+        </div>
+        <button type="button" class="ml-auto -mx-1.5 -my-1.5 rounded-lg p-1.5 flex items-center justify-center h-8 w-8 bg-green-200 text-green-600 hover:bg-green-300" onclick="closeMessage()">
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+      </div>
+      {% endif %}
+      {% endfor %}
+      <!--body-content-->
+      {% block body %}{% endblock body %}
+      <!--new footer-->
+      <section class="text-gray-200 body-font bg-darker">
+        <div class="px-2 md:px-4 max-w-6xl mx-auto py-12">
+          <div class="text-center">
+            <p class="pb-3 text-sm">
+              <strong>OrbitGadget</strong> — A constructive and and resourceful hub for computer science geeks. Let us achieve together.
+            </p>
+            <p class="text-sm pb-1">
+              <a class="hover:text-yellow-400" href="/privacy-policy">Privacy Policy</a>
+              <strong class="px-1">•</strong>
+              <a class="hover:text-yellow-400" href="/disclosure">Disclosure</a>
+              <strong class="px-1">•</strong>
+              <a class="hover:text-yellow-400" href="/site-terms">Site Terms</a>
+              <strong class="px-1">•</strong>
+              <a class="hover:text-yellow-400" href="/feed/">Atom Feed</a>
+              <strong class="px-1">•</strong>
+              <a class="hover:text-yellow-400" href="/sitemap.xml/">Sitemap</a>
+            </p>
+            <p class="text-sm">
+              Made with ❤️ and Django. OrbitGadget © 2020 - {% now "Y" %}.
+            </p>
+          </div>
+        </div>
+      </section>  
+    </div>
+  </body>
+  <!-- JS block -->
+  {% block js %}{% endblock js %}
+  <!-- prism js -->
+  <script src="{% static 'js/prism.js' %}"></script>
+  <!--accounts-menu-js-->
+  <script>
+    function showLogMenu(){
+      var element = document.getElementById("log-menu");
+      if (element.classList.contains("hidden")) {
+        element.classList.remove("hidden");
+      } else {
+        element.classList.add("hidden");
+      }
+    }
+    // close alert-messages
+    function closeMessage(){
+      var elementer = document.getElementById("alert-messages");
+      elementer.classList.add("hidden");
+    }
+  </script>
+</html>
