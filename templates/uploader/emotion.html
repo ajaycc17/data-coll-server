@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emotion Data Collection</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
+  </head>
+  <body>
+    <div class="min-h-screen p-4">
+      <div class="max-w-6xl mx-auto">
+        <h1 class="text-xl font-semibold text-center">
+          Emotion Data Dashboard
+        </h1>
+        <div class="w-full mb-2">
+          <strong>Total Records:</strong> {{ total_records }}
+          <strong>Total Users:</strong> {{ unique_userids|length }}
+        </div>
+
+        {% if page_obj %}
+        <table class="table-auto w-full border-collapse border border-gray-300">
+          <thead>
+            <tr>
+              <th class="border border-gray-300 p-2 bg-neutral-200">ID</th>
+              <th class="border border-gray-300 p-2 bg-neutral-200">User ID</th>
+              <th class="border border-gray-300 p-2 bg-neutral-200">Type</th>
+              <th class="border border-gray-300 p-2 bg-neutral-200">
+                Timestamp
+              </th>
+              <th class="border border-gray-300 p-2 bg-neutral-200">Valence</th>
+              <th class="border border-gray-300 p-2 bg-neutral-200">Arousal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in page_obj %}
+            <tr>
+              <td class="border border-gray-300 p-2">{{ record.id }}</td>
+              <td class="border border-gray-300 p-2">{{ record.userId }}</td>
+              <td class="border border-gray-300 p-2">{{ record.type }}</td>
+              <td class="border border-gray-300 p-2">{{ record.timestamp }}</td>
+              <td class="border border-gray-300 p-2">{{ record.valence }}</td>
+              <td class="border border-gray-300 p-2">{{ record.arousal }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center">No data available</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        {% if page_obj.has_other_pages %}
+        <div class="mx-auto mt-4 flex justify-center items-center gap-4">
+          {% if page_obj.has_previous %}
+          <a
+            href="?page=1"
+            class="flex items-center gap-1 bg-black text-white py-1 px-4"
+            ><i class="bi bi-arrow-left"></i>First</a
+          >
+          <a
+            href="?page={{ page_obj.previous_page_number }}"
+            class="flex items-center gap-1 bg-black text-white py-1 px-4"
+            >Previous</a
+          >
+          {% endif %}
+
+          <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+          </span>
+
+          {% if page_obj.has_next %}
+          <a
+            href="?page={{ page_obj.next_page_number }}"
+            class="flex items-center gap-1 bg-black text-white py-1 px-4"
+            >Next</a
+          >
+          <a
+            href="?page={{ page_obj.paginator.num_pages }}"
+            class="flex items-center gap-1 bg-black text-white py-1 px-4"
+            >Last<i class="bi bi-arrow-right"></i
+          ></a>
+          {% endif %}
+        </div>
+        {% endif %} {% else %}
+        <div class="text-center mt-8">
+          <h3>No emotion data found</h3>
+          <p>Upload some emotion data to see it here.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+</html>
