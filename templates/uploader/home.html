@@ -30,9 +30,8 @@
               <th class="border border-gray-300 p-2 bg-neutral-200">
                 Timestamp
               </th>
-              <th class="border border-gray-300 p-2 bg-neutral-200">
-                Heart Rate
-              </th>
+              <th class="border border-gray-300 p-2 bg-neutral-200">Value</th>
+              <th class="border border-gray-300 p-2 bg-neutral-200">Type</th>
             </tr>
           </thead>
           <tbody>
@@ -41,7 +40,8 @@
               <td class="border border-gray-300 p-2">{{ record.id }}</td>
               <td class="border border-gray-300 p-2">{{ record.userId }}</td>
               <td class="border border-gray-300 p-2">{{ record.timestamp }}</td>
-              <td class="border border-gray-300 p-2">{{ record.hr }} BPM</td>
+              <td class="border border-gray-300 p-2">{{ record.value }}</td>
+              <td class="border border-gray-300 p-2">{{ record.type }}</td>
             </tr>
             {% empty %}
             <tr>

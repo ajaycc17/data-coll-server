@@ -5,75 +5,37 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from django.shortcuts import render
 from django.core.paginator import Paginator
-from .models import UploadedJSON as HeartRateData, EmotionData
+from .models import HealthData, EmotionData
 
 
 def _parse_and_validate_sample(sample: dict) -> tuple | None:
-    """
-    Parses a single sample dictionary, validates its contents,
-    and converts the timestamp to a timezone-aware datetime object.
-    Returns a tuple of (datetime, bpm) or None if the sample is invalid.
-    """
     try:
         timestamp_ms = sample.get("ts")
-        bpm = sample.get("bpm")
+        type = sample.get("type")
+        value = sample.get("value")
 
-        # timestamp or bpm should not be None
-        if timestamp_ms is None or bpm is None:
+        # timestamp or value should not be None
+        if timestamp_ms is None or value is None:
             return None
 
         # Convert to float first for broader compatibility
         timestamp_ms = float(timestamp_ms)
-        bpm = float(bpm)
+        type = str(type)
+        value = float(value)
 
         # convert to ist datetime
         ist_datetime = datetime.fromtimestamp(
             timestamp_ms / 1000, tz=ZoneInfo("Asia/Kolkata")
         )
-        return ist_datetime, bpm
+        return ist_datetime, type, value
 
     except (ValueError, TypeError):
-        # Handle cases where ts or bpm are not valid numbers
-        return None
-
-
-def _parse_and_validate_emotion_sample(sample: dict) -> tuple | None:
-    """
-    Parses a single emotion sample dictionary, validates its contents,
-    and converts the timestamp to a timezone-aware datetime object.
-    Returns a tuple of (datetime, valence, arousal) or None if the sample is invalid.
-    """
-    try:
-        timestamp_ms = sample.get("ts")
-        valence = sample.get("valence")
-        arousal = sample.get("arousal")
-
-        # timestamp, valence, or arousal should not be None
-        if timestamp_ms is None or valence is None or arousal is None:
-            return None
-
-        # Convert to float for compatibility
-        timestamp_ms = float(timestamp_ms)
-        valence = float(valence)
-        arousal = float(arousal)
-
-        # Validate valence and arousal are in range 0-5
-        if not (0.0 <= valence <= 5.0) or not (0.0 <= arousal <= 5.0):
-            return None
-
-        # convert to ist datetime
-        ist_datetime = datetime.fromtimestamp(
-            timestamp_ms / 1000, tz=ZoneInfo("Asia/Kolkata")
-        )
-        return ist_datetime, valence, arousal
-
-    except (ValueError, TypeError):
-        # Handle cases where values are not valid numbers
+        # Handle cases where ts or value are not valid numbers
         return None
 
 
 @csrf_exempt
-def upload_json(request):
+def upload_health_data(request):
     """
     Handles POST requests with a JSON file containing heart rate data,
     processes the data, and saves it to the database.
@@ -87,9 +49,10 @@ def upload_json(request):
     try:
         json_file = request.FILES["file"]
         data = json.load(json_file)
+        userid = request.POST.get("userid")
 
         # Ensure the JSON is a dictionary with the correct type
-        if not isinstance(data, dict) or data.get("type") != "heart_rate_batch":
+        if not isinstance(data, dict) or data.get("type") != "health_data_batch":
             return JsonResponse({"error": "Invalid JSON format or type."}, status=400)
 
         samples = data.get("samples", [])
@@ -98,21 +61,19 @@ def upload_json(request):
                 {"error": "Invalid 'samples' format. It must be a list."}, status=400
             )
 
-        # Use the provided userid or a default value, ensuring it's an integer
-        default_userid = int(request.POST.get("userid", 999))
-
-        created_records_ids = []
+        record_count = 0
 
         for sample in samples:
             parsed_data = _parse_and_validate_sample(sample)
             if parsed_data:
-                timestamp, bpm = parsed_data
-                record = HeartRateData.objects.create(
-                    userId=default_userid,
+                timestamp, type, value = parsed_data
+                HealthData.objects.create(
+                    userId=userid,
                     timestamp=timestamp,
-                    hr=bpm,
+                    type=type,
+                    value=value,
                 )
-                created_records_ids.append(record.id)
+                record_count += 1
 
         # apply processing logic as needed for the collected physiological data
         # get a decision in boolean and then return it to the user 0 for not opportune, 1 for opportune
@@ -120,10 +81,8 @@ def upload_json(request):
 
         return JsonResponse(
             {
-                "message": f"Successfully processed {len(created_records_ids)} records.",
+                "message": f"Successfully processed {record_count} records.",
                 "opportune": decision_opportune,
-                "records_created": len(created_records_ids),
-                "record_ids": created_records_ids,
             },
             status=201,
         )
@@ -141,10 +100,6 @@ def upload_json(request):
 
 @csrf_exempt
 def upload_emotion_json(request):
-    """
-    Handles POST requests with raw JSON data containing single emotion data (valence & arousal),
-    processes the data, and saves it to the database.
-    """
     if request.method != "POST":
         return JsonResponse(
             {"error": "Invalid request. Use POST method."},
@@ -157,13 +112,13 @@ def upload_emotion_json(request):
 
         # Extract required fields from single emotion object
         userid = data.get("userid")
-        timestamp_str = data.get("timestamp")
-        type = data.get("type", "periodic")
+        timestamp_ms = data.get("timestamp")
         valence = data.get("valence")
         arousal = data.get("arousal")
+        type = data.get("type")
 
         # Validate all required fields are present
-        if not all([userid, timestamp_str, valence is not None, arousal is not None]):
+        if not all([userid, timestamp_ms, valence is not None, arousal is not None]):
             return JsonResponse(
                 {
                     "error": "Missing required fields. Need: userid, timestamp, valence, arousal"
@@ -179,6 +134,11 @@ def upload_emotion_json(request):
         valence = float(valence)
         arousal = float(arousal)
 
+        # get timestamp
+        ist_datetime = datetime.fromtimestamp(
+            timestamp_ms / 1000, tz=ZoneInfo("Asia/Kolkata")
+        )
+
         # Validate valence and arousal are in range 0-5
         if not (0.0 <= valence <= 5.0) or not (0.0 <= arousal <= 5.0):
             return JsonResponse(
@@ -186,51 +146,25 @@ def upload_emotion_json(request):
                 status=400,
             )
 
-        # Parse timestamp
-        try:
-            if isinstance(timestamp_str, str):
-                # Handle ISO format timestamps
-                timestamp = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
-                # Convert to IST timezone
-                ist_timezone = ZoneInfo("Asia/Kolkata")
-                timestamp = timestamp.astimezone(ist_timezone)
-            else:
-                return JsonResponse(
-                    {
-                        "error": "Timestamp must be in ISO format (e.g., '2025-10-21T11:15:00Z')"
-                    },
-                    status=400,
-                )
-        except ValueError:
-            return JsonResponse(
-                {
-                    "error": "Invalid timestamp format. Use ISO format (e.g., '2025-10-21T11:15:00Z')"
-                },
-                status=400,
-            )
-
         # Create database record
         record = EmotionData.objects.create(
             userId=userid,
-            timestamp=timestamp,
+            timestamp=ist_datetime,
             valence=valence,
             arousal=arousal,
+            type=type,
         )
-
-        # Apply processing logic as needed for the collected emotion data
-        # Get a decision in boolean and then return it to the user 0 for not opportune, 1 for opportune
-        decision_opportune = True  # Placeholder for actual decision logic
 
         return JsonResponse(
             {
-                "message": "Successfully processed emotion data.",
-                "opportune": decision_opportune,
+                "message": "Successfully recorded emotion data.",
                 "record_id": record.id,
                 "processed_data": {
                     "userid": userid,
-                    "timestamp": timestamp.isoformat(),
+                    "timestamp": ist_datetime.isoformat(),
                     "valence": valence,
                     "arousal": arousal,
+                    "type": type,
                 },
             },
             status=201,
@@ -253,13 +187,13 @@ def display_data(request):
     """View to display heart rate data in a table format"""
     page_number = request.GET.get("page", 1)
 
-    heart_rate_data = HeartRateData.objects.all().order_by("id")
+    heart_rate_data = HealthData.objects.all().order_by("id")
 
     paginator = Paginator(heart_rate_data, 15)
     page_obj = paginator.get_page(page_number)
 
     unique_userids = (
-        HeartRateData.objects.values_list("userId", flat=True)
+        HealthData.objects.values_list("userId", flat=True)
         .distinct()
         .order_by("userId")
     )

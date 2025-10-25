@@ -2,12 +2,13 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
-class UploadedJSON(models.Model):
+class HealthData(models.Model):
     # id field is automatically created by Django as primary key
     id = models.AutoField(primary_key=True)
-    userId = models.CharField(max_length=64, unique=True, help_text="ID of the user")
+    userId = models.CharField(max_length=64, help_text="ID of the user")
     timestamp = models.DateTimeField()
-    hr = models.IntegerField(help_text="3-digit heart rate value")
+    type = models.CharField(max_length=32, help_text="Step count or HR")
+    value = models.IntegerField(help_text="3-digit heart rate value")
 
     def __str__(self):
         return f"User {self.userId} at {self.timestamp}"
@@ -19,7 +20,7 @@ class UploadedJSON(models.Model):
 class EmotionData(models.Model):
     # id field is automatically created by Django as primary key
     id = models.AutoField(primary_key=True)
-    userId = models.CharField(max_length=64, unique=True, help_text="ID of the user")
+    userId = models.CharField(max_length=64, help_text="ID of the user")
     timestamp = models.DateTimeField()
     valence = models.FloatField(
         validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
