@@ -17,7 +17,8 @@
           Physiological Data Dashboard
         </h1>
         <div class="w-full mb-2">
-          <strong>Total Records:</strong> {{ total_records }}
+          <a href="{% url 'display_home' %}" class="font-bold"> Home </a>|
+          <strong>Total Records:</strong> {{ total_records }} |
           <strong>Total Users:</strong> {{ unique_userids|length }}
         </div>
 
